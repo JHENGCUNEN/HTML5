@@ -1,0 +1,359 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    <link rel="stylesheet" href="css/stylesheet.css" />
+    <link rel="stylesheet" href="css/bootstrap.css" />
+    <script src="js/jquery.js"></script> 
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/JavaScript.js"></script> 
+    <script>
+
+        $(function () {
+            $("button").click(function () {
+        var canvas = $('#canvas')[0];
+        var context = canvas.getContext('2d');
+        var background = document.getElementById('background');
+        var image = document.getElementById("fireBALL");
+        var image = document.getElementById("ROCKBALL");
+        var image = document.getElementById("Player1Main");
+        var image = document.getElementById("Player1Bazooka");
+        var image = document.getElementById("Player2Main");
+        var image = document.getElementById("Player2Bazooka");
+        var image = document.getElementById("tree");
+        var ballX = 50;
+        var ballY = 460;
+        var ballRadius = 20;
+        var ballDeltaX;
+        var ballDeltaY;
+
+        var ball2X = 945;
+        var ball2Y = 465;
+        var ball2Radius = 20;
+        var ball2DeltaX;
+        var ball2DeltaY;
+        var gravity = 0;
+
+        var paddleX = 55;
+        var paddleY = 480;
+        var paddleWidth = 20;
+        var paddleHeight = 100;
+        var paddleDeltaX = 0;
+        var paddleDeltaY = 0;
+        var paddleSpeed = 0;
+        var paddleAngle = 0.5;
+        var paddleMoveAngle = 0;
+
+        var paddle2X = 945;
+        var paddle2Y = 480;
+        var paddle2Width = 20;
+        var paddle2Height = 100;
+        var paddle2DeltaX = 0;
+        var paddle2DeltaY = 0;
+        var paddle2Speed = 0;
+        var paddle2Angle = -0.5;
+        var paddle2MoveAngle = 0;
+
+        var player1X = 0;
+        var player1Y = 380;
+        var player1Width = 80;
+        var player1Height = 100;
+        var player2X = 920;
+        var player2Y = 380;
+        var player2Width = 80;
+        var player2Height = 100;
+        var treeX = 365;
+        var treeY = 170;
+        var treeWidth = 20;
+        var treeHeight = 100;
+        function drawTree() {
+            context.beginPath();
+            context.drawImage(tree, treeX, treeY, 350, 350);
+            context.fill();
+        }
+        function drawPlayer1() {
+            context.beginPath();
+            context.drawImage(Player1Main, player1X, player1Y, 80, 100);
+            context.fill();
+        }
+        function drawBazooka1() {
+            context.save();
+            context.translate(paddleX, paddleY);
+            context.rotate(paddleAngle);
+            context.drawImage(Player1Bazooka, paddleWidth / -2, -paddleHeight, 30, 80);
+            context.restore();
+        }
+
+        function drawPlayer2() {
+            context.beginPath();
+            context.drawImage(Player2Main, player2X, player2Y, 80, 100);
+            context.fill();
+        }
+        function drawBazooka2() {
+            context.save();
+            context.translate(paddle2X, paddle2Y);
+            context.rotate(paddle2Angle);
+            context.drawImage(Player2Bazooka, paddle2Width / -2, -paddle2Height, 30, 80);
+            context.restore();
+        }
+        function drawBall() {
+            context.beginPath();
+            context.drawImage(fireBALL, ballX, ballY, 20, 20);
+            context.fill();
+        }
+        function drawBall2() {
+            context.beginPath();
+            context.drawImage(ROCKBALL, ball2X, ball2Y, 20, 20);
+            context.fill();
+        }
+        function drawPaddle() {
+
+            context.save();
+            context.translate(paddleX, paddleY);
+            context.rotate(paddleAngle);
+            context.fillRect(paddleWidth / -2, -paddleHeight, paddleWidth, paddleHeight);
+            context.restore();
+        }
+        function drawPaddle2() {
+
+            context.save();
+            context.translate(paddle2X, paddle2Y);
+            context.rotate(paddle2Angle);
+            context.fillRect(paddle2Width / -2, -paddle2Height, paddle2Width, paddle2Height);
+            context.restore();
+        }
+        function animate() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            drawBall();
+            moveBall();
+            drawBall2();
+            moveBall2();
+            movePaddle();
+            movePaddle2();
+            drawPlayer1();
+            drawBazooka1();
+            drawPlayer2();
+            drawBazooka2();
+            drawTree();
+        }
+
+        var gameLoop;
+        var ballMove;
+        var ball2Move;
+        var paddleMove;
+        var paddle2Move;
+        var fireSound = new Audio("sound/fire.MP3");
+        var fire2Sound = new Audio("sound/fire2.MP3");
+        var boomSound = new Audio("sound/boom.MP3");
+        var BGM = new Audio("sound/BGM.MP3");
+        function startGame() {
+           
+            ballDeltaY = 0;
+            ballDeltaX = 0;
+            ballMove = 'NONE';
+            ball2DeltaY = 0;
+            ball2DeltaX = 0;
+            ball2Move = 'NONE';
+            paddleMove = 'NONE';
+            paddleSpeed = 0;
+            paddle2Move = 'NONE';
+            paddle2Speed = 0;
+            gameLoop = setInterval(animate, 20);
+            $(document).keydown(function (evt) {
+                if (evt.keyCode == 37) {
+                    ball2Move = 'RIGHT'; fireSound.play();
+                } else if (evt.keyCode == 32) {
+                    ballMove = 'LEFT'; fire2Sound.play();
+                }
+            });
+            $(document).keyup(function (evt) {
+                if (evt.keyCode == 37) {
+                    ball2Move = 'NONE';
+                } else if (evt.keyCode == 32) {
+                    ballMove = 'NONE';
+                }
+            });
+
+
+            $(document).keydown(function (evt) {
+                if (evt.keyCode == 87) {
+                    paddleMove = 'UP1';
+                } else if (evt.keyCode == 83) {
+                    paddleMove = 'DOWN1';
+                }
+            });
+
+            $(document).keyup(function (evt) {
+                if (evt.keyCode == 87) {
+                    paddleMove = 'NONE';
+                } else if (evt.keyCode == 83) {
+                    paddleMove = 'NONE';
+                }
+            });
+            $(document).keydown(function (evt) {
+                if (evt.keyCode == 40) {
+                    paddle2Move = 'UP2';
+                } else if (evt.keyCode == 38) {
+                    paddle2Move = 'DOWN2';
+                }
+            });
+
+            $(document).keyup(function (evt) {
+                if (evt.keyCode == 40) {
+                    paddle2Move = 'NONE';
+                } else if (evt.keyCode == 38) {
+                    paddle2Move = 'NONE';
+                }
+            });
+        }
+
+        function movePaddle() {
+
+            if (paddleMove == 'UP1') {
+                paddleMoveAngle = -1;
+            } else if (paddleMove == 'DOWN1') {
+                paddleMoveAngle = 1;
+            } else {
+                paddleMoveAngle = 0;
+            }
+            paddleAngle += paddleMoveAngle * Math.PI / 180;
+
+        }
+        function movePaddle2() {
+
+            if (paddle2Move == 'UP2') {
+                paddle2MoveAngle = -1;
+            } else if (paddle2Move == 'DOWN2') {
+                paddle2MoveAngle = 1;
+            } else {
+                paddle2MoveAngle = 0;
+            }
+            paddle2Angle += paddle2MoveAngle * Math.PI / 180;
+
+        }
+
+
+        function moveBall() {
+            if (ballMove == 'LEFT') {
+                ballDeltaX = 10, ballDeltaY = -10, gravity = 0.3;
+            }
+
+
+            if (ballY + ballDeltaY + ballRadius > canvas.height) {
+                ballDeltaY = 0, ballDeltaX = 0, ballX = 50, ballY = 465;
+            }
+            if ((ballX + ballDeltaX - ballRadius < 0) ||
+            (ballX + ballDeltaX + ballRadius > canvas.width)) {
+                ballDeltaY = 0, ballDeltaX = 0, ballX = 60, ballY = 465;
+            }
+            if (ballY + ballDeltaY + ballRadius >= player2Y) {
+                if (ballX + ballDeltaX >= player2X &&
+                    ballX + ballDeltaX <= player2X + player2Width) {
+                    playerOneVictory()
+                }
+            }
+            if (ballY + ballDeltaY + ballRadius >= treeY) {
+                if (ballX + ballDeltaX >= treeX &&
+                    ballX + ballDeltaX <= treeX + treeWidth) {
+                    ballDeltaY = 0, ballDeltaX = 0, ballX = 50, ballY = 465;
+                }
+            }
+            ballX += ballDeltaX * Math.sin(paddleAngle);
+            ballY += ballDeltaY * Math.cos(paddleAngle);
+            ballDeltaY += gravity;
+
+        }
+        function moveBall2() {
+            if (ball2Move == 'RIGHT') {
+                ball2DeltaY = -10, ball2DeltaX = 10; gravity = 0.3;
+            }
+
+            if (ball2Y + ball2DeltaY + ball2Radius > canvas.height) {
+                ball2DeltaY = 0, ball2DeltaX = 0, ball2X = 945, ball2Y = 465;
+            }
+            if ((ball2X + ball2DeltaX - ball2Radius < 0) ||
+            (ball2X + ball2DeltaX + ball2Radius > canvas.width)) {
+                ball2DeltaY = 0, ball2DeltaX = 0, ball2X = 945, ball2Y = 465;
+            }
+            if (ball2Y + ball2DeltaY + ball2Radius >= player1Y) {
+                if (ball2X + ball2DeltaX >= player1X &&
+                    ball2X + ball2DeltaX <= player1X + player1Width) {
+                    playerTwoVictory()
+                }
+            }
+            if (ball2Y + ball2DeltaY + ball2Radius >= treeY) {
+                if (ball2X + ball2DeltaX >= treeX &&
+                    ball2X + ball2DeltaX <= treeX + treeWidth) {
+                    ball2DeltaY = 0, ball2DeltaX = 0, ball2X = 945, ball2Y = 465;
+                }
+            }
+            ball2X += ball2DeltaX * Math.sin(paddle2Angle);
+            ball2Y += ball2DeltaY * Math.cos(paddle2Angle);
+            ball2DeltaY += gravity;
+        }
+        function playerOneVictory() {
+            clearInterval(gameLoop);
+            boomSound.play();
+            context.font = "50px Comic Sans MS";
+            context.fillStyle = "red";
+            context.textAlign = "center";
+            context.fillText('1P Victory!!!!', canvas.width / 2, 50);
+        }
+        function playerTwoVictory() {
+            clearInterval(gameLoop);
+            boomSound.play();
+            context.font = "50px Comic Sans MS";
+            context.fillStyle = "red";
+            context.textAlign = "center";
+            context.fillText('2P Victory!!!!', canvas.width / 2, 50);
+        }
+        BGM.play();
+        startGame();
+            });
+        });
+    </script>
+
+    <style type="text/css">
+        canvas {
+            border: 1px solid black;
+            background-image: url("img/background.gif");
+        }
+    </style>
+</head>
+<body id="page-top" data-spy="scroll" data-target=".navbar" data-offset="50">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand page-scroll" href="#page-top"><span class="glyphicon glyphicon-home" ></span></a>
+            </div>      
+        </div>
+    </nav>
+    <header>
+        <div class="row">
+            <div class="container">  
+                    <canvas id="canvas" width="1000" height="485"></canvas>
+                <button id="button" name="button" type="button" class="btn btn-danger btn-lg btn-block">開始遊戲</button>
+                    <img id="fireBALL" src="img/fireBALL.png" style="display: none;">
+                    <img id="ROCKBALL" src="img/ROCKBALL.png" style="display: none;">
+                    <img id="Player1Main" src="img/1pm.png" style="display:none;" />
+                    <img id="Player1Bazooka" src="img/c1.png" style="display:none;" />
+                    <img id="Player2Main" src="img/2pm.png" style="display:none;" />
+                    <img id="Player2Bazooka" src="img/c2.png" style="display:none;" />
+                    <img id="tree" src="img/tree.png" style="display:none;" />
+                </div>         
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h3 class="text-center">1P 使用WS鍵控制砲彈角度 空白鍵發射</h3>
+            </div>
+            <div class="col-md-6">
+                <h3 >2P 使用上下鍵控制砲彈角度 左鍵發射</h3>
+      </div>
+        </div>
+    </header>
+   
+</body>
+
+
+</html>
